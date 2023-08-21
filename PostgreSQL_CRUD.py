@@ -8,13 +8,15 @@ class BancoDeDados:
     # Atributo PUBLICO da classe
     def criar_tabela(nome_tabela_nova, conn):
         cursor = conn.cursor()
-        sql_string = f''' 
-            create table if not exists {nome_tabela_nova} (\
-                id serial primary key,\
-                nome text,\
-                numero text,\
-                email text
-            )
+        if nome_tabela_nova == 'Produtos':
+            sql_string = f''' 
+                create table if not exists {nome_tabela_nova} (\
+                    id serial primary key,\
+                    nome text,\
+                    valor text,\
+                    descricao text, \
+                    categoria text 
+                )
         '''
         cursor.execute(sql_string)
         conn.commit()
@@ -22,19 +24,19 @@ class BancoDeDados:
         print(f'Tabela {nome_tabela_nova} criada com sucesso.')
 
     @staticmethod
-    def insere_dados(conn,nome_tabela, nome_usuario, numero_usuario, email_usuario):
+    def insere_dados(conn,nome_tabela, nome_produto, valor_produto, descricao_produto, categoria_produto):
         cursor = conn.cursor()
 
         sql_string = f"""
             insert into {nome_tabela}\
-            (nome, numero, email)\
-            values ('{nome_usuario}', '{numero_usuario}', '{email_usuario}')
+            (nome,valor,descricao,categoria)\
+            values ('{nome_produto}', '{valor_produto}', '{descricao_produto}','{categoria_produto}')
         """
 
         cursor.execute(sql_string)
         conn.commit()
         cursor.close()
-        print(f'Dados: {nome_usuario} - {numero_usuario} - {email_usuario}', end=' ')
+        print(f'Dados: {nome_produto} - {valor_produto} - {descricao_produto},{categoria_produto} ',end=' ')
         print(f'inseridos em {nome_tabela} com sucesso.')
 
     @staticmethod
@@ -116,18 +118,19 @@ Insira a operação (1 - 6): '''
                 BancoDeDados.criar_tabela(nome_tabela,conn)
             elif operacao == 2:
                 tabela = input('Informe o nome da tabela: ')
-                nome = input('Informe o nome do contato: ')
-                numero = input('Informe o número do contato: ')
-                email = input('Informe o e-mail do contato: ')
+                nome = input('Informe o nome do produto: ')
+                valor = input('Informe o valor do produto: ')
+                descricao = input('Descricao do produto: ')
+                categoria = input('Informe qual a categoria do produto: ')
 
                 #### VERFICAR DADOS COM IFS
 
                 BancoDeDados.insere_dados(conn, 
                     nome_tabela=tabela,
-                    nome_usuario=nome,
-                    numero_usuario=numero,
-                    email_usuario=email,
-                    
+                    nome_produto=nome,
+                    valor_produto=valor,
+                    descricao_produto=descricao,
+                    categoria_produto=categoria              
                 )
             elif operacao == 3:
                 tabela_delete = input('Informe de qual tabela voce deseja deletar o ID:')
