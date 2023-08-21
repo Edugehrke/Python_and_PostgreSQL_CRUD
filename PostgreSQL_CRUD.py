@@ -18,6 +18,16 @@ class BancoDeDados:
                     categoria text 
                 )
         '''
+        elif nome_tabela_nova == 'Vendas':
+            pass
+        
+        elif nome_tabela_nova == 'Cliente_Cadastro':
+            pass
+
+        elif nome_tabela_nova == 'Vendas_fiado':
+            pass
+
+
         cursor.execute(sql_string)
         conn.commit()
         cursor.close()
