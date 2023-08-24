@@ -1,45 +1,66 @@
 import os
 import psycopg2
+import time
 
 # @staticmethod
 # permite aceesar metodo sem criar objetos
 
-class BancoDeDados:
-    # Atributo PUBLICO da classe
-    def criar_tabela(nome_tabela_nova, conn):
+class Strong:
+    
+    @staticmethod
+    def criar_tabela(conn):
         cursor = conn.cursor()
-        if nome_tabela_nova == 'Produtos':
-            sql_string = f''' 
-                create table if not exists {nome_tabela_nova} (\
-                    id serial primary key,\
-                    nome text,\
-                    valor text,\
-                    descricao text, \
-                    categoria text 
-                )
-        '''
-        elif nome_tabela_nova == 'Vendas':
-            pass
-        
-        elif nome_tabela_nova == 'Cliente_Cadastro':
-            pass
+        sql_string = '''
+    CREATE TABLE IF NOT EXISTS Estoque(
+        id_produto serial primary key,
+        nome_produto text,
+        valor_produto double precision,
+        descricao_produto text,
+        categoria_produto text
+    );
+    CREATE TABLE IF NOT EXISTS Vendas(
+        id_cliente serial primary key,
+        id_produto integer,
+        horario_venda double precision,
+        valor_venda double precision,
+        CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES Estoque (id_produto)
+    );
+    CREATE TABLE IF NOT EXISTS Vendas_Fiado(
+        id serial primary key,
+        id_produto integer,
+        id_cliente integer,
+        horario_venda float,
+        valor_venda float,
+        CONSTRAINT fk_produto_vendas_fiado FOREIGN KEY (id_produto) REFERENCES Estoque (id_produto)
+        ); 
 
-        elif nome_tabela_nova == 'Vendas_fiado':
-            pass
+    CREATE TABLE IF NOT EXISTS Cliente_cadastro(
+        id serial primary key,
+        teleone integer,
+        nome text,
+        email text,
+        cpf text,
+        cep integer,
+        nmr_casa integer,
+        complemento text,
+        cartao integer,
+        CONSTRAINT fk_id_cliente FOREIGN KEY (nmr_casa) REFERENCES Vendas (id_cliente)
 
-
+    )
+'''
+        print('Tabelas criadas com sucesso!')
         cursor.execute(sql_string)
         conn.commit()
         cursor.close()
-        print(f'Tabela {nome_tabela_nova} criada com sucesso.')
+
+
 
     @staticmethod
     def insere_dados(conn,nome_tabela, nome_produto, valor_produto, descricao_produto, categoria_produto):
         cursor = conn.cursor()
-
         sql_string = f"""
             insert into {nome_tabela}\
-            (nome,valor,descricao,categoria)\
+            (nome_produto,valor_produto,descricao_produto,categoria_produto)\
             values ('{nome_produto}', '{valor_produto}', '{descricao_produto}','{categoria_produto}')
         """
 
@@ -49,50 +70,6 @@ class BancoDeDados:
         print(f'Dados: {nome_produto} - {valor_produto} - {descricao_produto},{categoria_produto} ',end=' ')
         print(f'inseridos em {nome_tabela} com sucesso.')
 
-    @staticmethod
-    def delete_linha(id_linha,nome_tabela,conn):
-        cursor = conn.cursor()
-
-        sql_string=(f"""
-        DELETE FROM  {nome_tabela}
-        WHERE id = {id_linha}
-        """)
-
-        cursor.execute(sql_string)
-        conn.commit()
-        cursor.close()
-
-        print(f'linha da ID: {id_linha} e da tabela:{nome_tabela} deletada com sucesso!')
-
-        # DELETAR LINHA VIA ID
-
-    @staticmethod
-    def mostra_tabela(nome_tabela, conn):
-        cursor = conn.cursor()
-        sql_string = f"""
-            select * from {nome_tabela} 
-            WHERE id = 2
-        """
-        cursor.execute(sql_string)  # Execute a consulta usando o cursor
-        resultados = cursor.fetchall()  # Recupere os resultados da consulta
-        for item in resultados:
-            print(item)
-        conn.commit()
-        cursor.close()
-
-
-    @staticmethod
-    def atualiza_linha(nome_tabela,id_linha, nome_novo, numero_novo, email_novo,conn):
-        cursor = conn.cursor()
-        sql_string = (f"""
-UPDATE {nome_tabela}
-SET nome = '{nome_novo}', numero = '{numero_novo}', email = '{email_novo}'
-WHERE id = {id_linha}
-        """
-        )
-        cursor.execute(sql_string)
-        conn.commit()
-        cursor.close()
 
 
         
@@ -124,42 +101,57 @@ Insira a operação (1 - 6): '''
             )
 
             if operacao == 1:
-                nome_tabela = input('Informe o nome da tabela nova: ')
-                BancoDeDados.criar_tabela(nome_tabela,conn)
+                Strong.criar_tabela(conn)
+
             elif operacao == 2:
-                tabela = input('Informe o nome da tabela: ')
-                nome = input('Informe o nome do produto: ')
-                valor = input('Informe o valor do produto: ')
-                descricao = input('Descricao do produto: ')
-                categoria = input('Informe qual a categoria do produto: ')
+                nome_tabela = input('Informe o nome da tabela: ')
+
+                if nome_tabela == 'Estoque':
+                    nome_produto = input('Informe o nome do produto: ')
+                    valor_produto = input('Informe o valor do produto: ')
+                    descricao_produto = input('Descricao do produto: ')
+                    categoria_produto = input('Informe qual a categoria do produto: ')
+                    
+                    lista_tabela_produtos = [conn,nome_tabela,nome_produto,valor_produto,descricao_produto,categoria_produto]
+
+                elif nome_tabela == 'Vendas':
+                    pass
+                    ##Criar uma funcao verifica item na tabela Produtos retornando TRUE OR FALSE
+                    ##INSERT INTO Na tabela vendas
+                    ##Update na tabela Estoque
+
+                
+                elif nome_tabela == 'Vendas_fiado':
+                    pass
+
+                elif nome_tabela == 'Cliente_Cadastro':
+                    pass
+
 
                 #### VERFICAR DADOS COM IFS
 
-                BancoDeDados.insere_dados(conn, 
-                    nome_tabela=tabela,
-                    nome_produto=nome,
-                    valor_produto=valor,
-                    descricao_produto=descricao,
-                    categoria_produto=categoria              
+                Strong.insere_dados( 
+                    *lista_tabela_produtos      
                 )
+
             elif operacao == 3:
                 tabela_delete = input('Informe de qual tabela voce deseja deletar o ID:')
                 nmr_linha = input('Informe o ID que voce deseja deletar:')
 
 
-                BancoDeDados.delete_linha(nmr_linha,tabela_delete ,conn)
+                Strong.delete_linha(nmr_linha,tabela_delete ,conn)
 
                 pass
             elif operacao == 4:
                 show_tabela = input('Qual tabela voce deseja visualizar? ')
-                BancoDeDados.mostra_tabela(show_tabela,conn)     
+                Strong.mostra_tabela(show_tabela,conn)     
             elif operacao == 5:
                 tabelas = input('de qual tabela voce deseja atualizar os dados?')
                 id_update = input('Digite a ID que voce deseja atualizar ')
                 nome_novo = input('Informe o novo nome: ')
                 numero_novo = input('Informe o numero novo: ')
                 email_novo = input('Informe o email novo: ')
-                BancoDeDados.atualiza_linha(tabelas,id_update, nome_novo, numero_novo, email_novo,conn)
+                Strong.atualiza_linha(tabelas,id_update, nome_novo, numero_novo, email_novo,conn)
 
 
                 pass
